@@ -1,0 +1,46 @@
+Hadoop commands:- (HDFS)
+
+- # hadoop fs -ls /
+- # hadoop fs -mkdir /new directory name
+- # hadoop fs -rmr  /directory name
+- # hadoop fs -copyFromLocal /linux directory /hadoop directory
+- # hadoop fs -cat /hadoop directory/filename
+- # hadoop fs -get /testout/part* /root/xyz
+  
+
+linux commands:
+
+- cd  directory name      (To inter directory)
+- cd ..                   (To move out directory)
+- pwd                     (parent directory path)
+- -mkdir                  (create a directory)
+- -rm -r                  (remove directory)
+- ls                      (list directory
+- sh                      (execute shell script)
+- cat                     (display the content of file)
+- clear                   (clear screen )
+- sftp                    (This can be used for doing file transfer using secure ftp protocol.)
+- tail                    (Display last few lines contents of a file. Very useful to watch latest content updates on log file.
+			   Watch running content of a logfile name logfile1 
+			   tail -f logfile1  )
+- uname                   (Find information about version and details of operating system
+			   uname -a  )
+- ps                      (Display all running process status for current user
+			   ps  )
+- df                      (df -h)
+- du
+- man                     Used to read more details about how to use any command
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+                                         Map Reduces with java Programing 
+
+
+# cd  java-files 
+# sh  java-compile.sh WordCount.java
+# hadoop fs -mkdir /shiv
+# hadoop fs -copyFromLocal /linux directory  /hadoop directory
+# hadoop fs -ls /shiv
+# hadoop jar WordCount.jar org.apache.hadoop.examples.WordCount  /shiv/4300.txt /testout 
+# cd ..
+# hadoop fs -cat /testout/part-r-00000
+

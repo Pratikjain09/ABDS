@@ -1,0 +1,295 @@
+CREATE DATABASE|SCHEMA [IF NOT EXISTS] <database name>;
+
+CREATE DATABASE [IF NOT EXISTS] userdb;
+
+CREATE SCHEMA userdb;
+
+SHOW DATABASES;
+
+USE userdb;
+
+DROP DATABASE IF EXISTS userdb;
+
+DROP DATABASE IF EXISTS userdb CASCADE;  // used to drop tables before droping database
+
+DROP SCHEMA userdb;
+
+hive --hiveconf hive.cli.print.current.db=true
+======================================================================
+
+CREATE TABLE IF NOT EXISTS employee ( eid int, name String,
+> salary String, destination String)
+> COMMENT ‘Employee details’
+> ROW FORMAT DELIMITED
+> FIELDS TERMINATED BY ‘\t’
+> LINES TERMINATED BY ‘\n’
+> STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH '/home/user/sample.txt'
+> OVERWRITE INTO TABLE employee;
+
+describe extended <tablename>;
+
+CREATE TABLE t (
+s STRING,
+f FLOAT,
+a ARRAY<MAP<STRING, STRUCT<p1:INT,
+p2:INT>>);
+
+SELECT s, f, a[0][‘foobar’].p2 FROM t;
+
+CREATE TABLE foo (id INT, msg STRING)
+PARTITIONED BY (dt STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ‘,’;
+
+CREATE TABLE users (id INT, name STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ‘,’;
+
+CREATE TABLE usersd (id INT, name STRING , dt DATE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ‘,’;
+//format yyyy-mm-dd
+select year(dt) from usersd;
+
+SHOW PARTITIONS foo;
+
+CREATE EXTERNAL TABLE test_extern(c1 string, c2 int) LOCATION '/user/mytables/mydata';
+
+CREATE TABLE dest1(key INT, value STRING) STORED AS
+INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileOutputFormat'
+
+
+show functions;
+describe function <functionname>;
+
+
+=======================================================================
+Dynamic Partition
+
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.max.dynamic.partition=2048;
+SET hive.exec.max.dynamic.partitions.pernode=256;
+SET hive.exec.dynamic.partition.mode=non-strict;
+
+CREATE TABLE part_u (
+id int,
+name string)
+PARTITIONED BY (
+year INT,
+month INT,
+day INT);
+
+CREATE TABLE patents (
+citing_p int,
+cited_p int,
+assig string)
+PARTITIONED BY (
+year INT,
+month INT,
+day INT)
+
+INSERT OVERWRITE INTO TABLE patents PARTITION(year,month,day)
+SELECT citing,cited,name,year(publi_date),month(publi_date),day(publi_day)
+from patents_raw ;
+
+INSERT INTO TABLE part_user PARTITION(yoj)
+SELECT id,name,yoj
+from users;
+
+INSERT INTO TABLE part_u PARTITION(year,month,day)
+SELECT id,name,year(dt),month(dt),day(dt)
+from usersd;
+//values for partition col must noot be specified
+//partition col must be specified at the end of the select clause in the same order as they are specified 
+in the partitioned by clause 
+
+
+=======================================================================
+
+ALTER TABLE employee RENAME TO emp;
+
+ALTER TABLE employee ADD COLUMNS ( > dept STRING COMMENT 'Department name');
+ALTER TABLE name DROP [COLUMN] column_name
+
+ALTER TABLE employee CHANGE name ename String;
+ALTER TABLE employee CHANGE salary salary Double;
+
+ALTER TABLE employee REPLACE COLUMNS ( eid INT empid Int, ename STRING name String);
+
+========================================================================
+
+DROP TABLE IF EXISTS employee;
+
+========================================================================
+
+ALTER TABLE employee
+ADD PARTITION (year=’2013’)
+location '/2012/part2012';
+
+ALTER TABLE employee PARTITION (year=’1203’)
+RENAME TO PARTITION (Yoj=’1203’);
+
+ALTER TABLE employee DROP [IF EXISTS]
+PARTITION (year=’1203’);
+
+===============================================================
+CREATE TABLE bucketed_users (id INT, name STRING)
+CLUSTERED BY (id) INTO 4 BUCKETS;
+
+CREATE TABLE bucketed_users (id INT, name STRING)
+CLUSTERED BY (id) SORTED BY (id) INTO 4 BUCKETS;
+
+SELECT * FROM bucketed_users
+TABLESAMPLE(BUCKET 1 OUT OF 4 ON id);
+
+=================================================================
+
+SELECT * FROM employee WHERE Id=1205;
+SELECT * FROM employee WHERE Salary>=40000;
+SELECT * FROM <tablename> LIMIT 10;
+SELECT * FROM <tablename> WHERE freq > 100 SORT BY freq ASC LIMIT 10;
+SELECT 20+30 ADD FROM temp;
+SELECT * FROM employee WHERE Salary>40000 && Dept=TP;
+SELECT round(2.6) from temp;
+SELECT floor(2.6) from temp;
+SELECT ceil(2.6) from temp;
+
+===============================================================
+
+INSERT OVERWRITE TABLE t1 SELECT * FROM t2;
+INSERT OVERWRITE TABLE sample1 '/tmp/hdfs_out' SELECT * FROM sample WHERE ds='2012-02-24'; 
+INSERT OVERWRITE DIRECTORY '/tmp/hdfs_out' SELECT * FROM sample WHERE ds='2012-02-24'; 
+INSERT OVERWRITE LOCAL DIRECTORY '/tmp/hive-sample-out' SELECT * FROM sample
+
+FROM records2
+INSERT OVERWRITE TABLE stations_by_year
+SELECT year, COUNT(DISTINCT station)
+GROUP BY year
+INSERT OVERWRITE TABLE records_by_year
+SELECT year, COUNT(1)
+GROUP BY year
+INSERT OVERWRITE TABLE good_records_by_year
+SELECT year, COUNT(1)
+WHERE temperature != 9999 AND quality IN (0, 1, 4, 5, 9)
+GROUP BY year;
+===============================================================
+
+CREATE VIEW emp_30000 AS
+> SELECT * FROM employee
+> WHERE salary>30000;
+
+DROP VIEW emp_30000;
+
+======================================================
+
+SELECT Id, Name, Dept FROM employee ORDER BY DEPT;
+SELECT Dept,count(*) FROM employee GROUP BY DEPT;
+
+=====================================================
+
+SELECT c.ID, c.NAME, c.AGE, o.AMOUNT FROM CUSTOMERS c JOIN ORDERS o  ON (c.ID = o.CUSTOMER_ID);
+
+SELECT c.ID, c.NAME, o.AMOUNT, o.DATE FROM CUSTOMERS c  LEFT OUTER JOIN ORDERS o  ON (c.ID = o.CUSTOMER_ID);
+
+SELECT c.ID, c.NAME, o.AMOUNT, o.DATE FROM CUSTOMERS c  RIGHT OUTER JOIN ORDERS o  ON (c.ID = o.CUSTOMER_ID);
+
+SELECT c.ID, c.NAME, o.AMOUNT, o.DATE FROM CUSTOMERS c FULL OUTER JOIN ORDERS o  ON (c.ID = o.CUSTOMER_ID);
+
+======================================================
+
+Run query  --   hive -e 'select a.col from tab1 a'
+Run query silent mode  --  hive -S -e 'select a.col from tab1 a'
+Run Script - hive -f script.sql
+
+Run script inside shell --   source file_name
+Run dfs cmd -- dfs –ls /user
+Run bach cmd -- !ls 
+
+To know the Hive properties, set the ‘set -v’ command in your system
+
+============================================================
+UDF 
+=====
+package com.example.hive.udf;
+import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.Text;
+public final class Lower extends UDF {
+public Text evaluate(final Text s) {
+if (s == null) { return null; }
+return new Text(s.toString().toLowerCase());
+}
+}
+
+=============
+Register UDF 
+
+CREATE FUNCTION my_lower AS 'com.example.hive.udf.Lower';
+
+SELECT my_lower(title), sum(freq) FROM titles GROUP BY my_lower(title);
+
+================
+Exporting data to csv file
+insert overwrite local directory '/root/' row format delimited fields terminated by ',' select * from tweetcompare;
+
+
+===========================
+Hive - Text Processing 
+
+1) concat, split, explode function
+
+select concat(fname,' ',lname) full_name from program;
+
+select concat_ws('/',fname,lname) full_name from program;
+
+select split(full_name, ' ') from
+(select concat(fname,' ',lname) full_name from program)
+temp;
+
+explode is to break the array and display in multiple rows:
+
+select explode(split(full_name, ' ')) as x from
+(select concat(fname,' ',lname) full_name
+from program limit 1)
+temp;
+
+2) sentences and ngrams
+
+sentences function is to break sentence into words. The results are a two-dimension array. Outer layer 
+displays each sentence, inter layer displays each word. ngrams is used to show the frequency of n-word 
+combination. 
+
+select sentences(message) from rating2012 limit 3;
+
+select explode(ngrams(sentences(message),2,6))
+as ngram from rating2012 where prod_id=1274673
+
+3) Parsing URL
+
+Parsing URL function can identify different parts from a URL string. For example we have anURL: http://www.qizeresearch.com/click.php?A=112&K=115
+
+parse_url(url, 'protocol') /*output: http*/
+parse_url(url,'host') /*output: www.qizeresearch.com*/
+parse_url(url,'path') /*output: /click.php*/
+parse_url(url,'query') /*output: A=112&K=115*/
+parse_url(url,'query','A') /*output: 112*/
+parse_url(url, 'query','K') /*output: 115*/
+
+============================
+Lateral View Syntax
+
+lateralView: LATERAL VIEW udtf(expression) tableAlias AS columnAlias (',' columnAlias)*
+fromClause: FROM baseTable (lateralView)*
+
+==============================
+
+Allowing Reserve keywords in hive
+
+hive.support.sql11.reserved.keywords=false
+
+======================
+
+Show table delimiter of created table 
+show create table emp;
